@@ -1,3 +1,5 @@
+#moviehash function from: https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes#Powershell2.0
+
 $consumerkey = $args[0]
 $jwt = $args[1]
 $path = $args[2]
