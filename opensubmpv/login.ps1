@@ -11,5 +11,5 @@ $header = @{
 "Api-Key"=$consumerkey
 "Content-Type"="application/json"
 }
-$url = "https://stoplight.io/mocks/opensubtitles/opensubtitles-api/2781383/login"
+$url = "https://api.opensubtitles.com/api/v1/login"
 (Invoke-WebRequest -Method POST -Uri $url -Body $body -Headers $header).Content

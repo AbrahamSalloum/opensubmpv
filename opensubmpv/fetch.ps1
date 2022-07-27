@@ -1,18 +1,7 @@
 $consumerkey = $args[0]
 $jwt = $args[1]
-$file_path = $args[2]
-#$filename = $args[3]
-
-$header = @{
-"Accept" = "*/*"
-"User-Agent" = "poop"
-"Api-Key"=$consumerkey
-"Content-Type"="application/json"
-"Authorization" = "Bearer "+$jwt
-
-}
-
-
+$full_file_path = $args[2]
+$filename = $args[3]
 
 
 
@@ -47,7 +36,22 @@ function MovieHash([string]$path) {
 }
 
 
+$moviehash = MovieHash $full_file_path
 
-$moviehash = MovieHash $path
-$url = "https://stoplight.io/mocks/opensubtitles/opensubtitles-api/2781383/subtitles?"+"moviehash="+$moviehash+"&query="+$file_path 
+$query = $filename -replace '\[|\]', '' -replace '\s', '+'
+
+$header = @{
+	"Accept" = "*/*"
+	"User-Agent" = "poop"
+	"Content-Type"="application/json"
+	"Api-Key"=$consumerkey
+	"Authorization" = "Bearer "+$jwt
+	
+	}
+
+
+
+$url = "https://api.opensubtitles.com/api/v1/subtitles?"+"moviehash="+$moviehash+"&query="+$query
+
+
 (Invoke-WebRequest -Method GET -Uri $url -Headers $header).Content
