@@ -10,4 +10,4 @@ finds subtitles from opensubtitle.com and presents each on OSD for user to selec
 
 'ctrl+shift+o' to run, then 'n' to go to next subtitles
 
-![Alt text](screenshot.png?raw=true "Optional Title")
+![screenshot](screenshot.png?raw=true "screenshot")
