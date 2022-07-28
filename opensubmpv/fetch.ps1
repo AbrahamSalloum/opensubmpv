@@ -3,8 +3,6 @@ $jwt = $args[1]
 $full_file_path = $args[2]
 $filename = $args[3]
 
-
-
 $dataLength = 65536
 
 function LongSum([UInt64]$a, [UInt64]$b) { 
@@ -41,17 +39,32 @@ $moviehash = MovieHash $full_file_path
 $query = $filename -replace '\[|\]', '' -replace '\s', '+'
 
 $header = @{
-	"Accept" = "*/*"
-	"User-Agent" = "poop"
-	"Content-Type"="application/json"
-	"Api-Key"=$consumerkey
-	"Authorization" = "Bearer "+$jwt
+	"Accept"        = "*/*"
+	"User-Agent"    = "poop"
+	"Content-Type"  = "application/json"
+	"Api-Key"       = $consumerkey
+	"Authorization" = "Bearer " + $jwt
 	
-	}
+}
+
+$url = "https://api.opensubtitles.com/api/v1/subtitles?" + "moviehash=" + $moviehash + "&query=" + $query
+
+ 
+
+ 
+try {
+
+	$response = (Invoke-RestMethod -Uri $url -Method GET -Headers $header)
+
+}
+catch {
+	Write-Output @{
+		'error'   = $_.Exception.Response.StatusCode 
+		"details" = $_.Exception.Response
+ } | ConvertTo-Json
+	
+	return 
+}
 
 
-
-$url = "https://api.opensubtitles.com/api/v1/subtitles?"+"moviehash="+$moviehash+"&query="+$query
-
-
-(Invoke-WebRequest -Method GET -Uri $url -Headers $header).Content
+Write-Output $response | ConvertTo-Json -Depth 100

@@ -1,10 +1,8 @@
 KEYBINDING = "ctrl+shift+o"
-var credentials = {
-    "username": "abraham",
-    "password": "superman1",
-    "consumerkey": "FAKEYFAKEY1",
-    "token": ''
-}
+mp.add_key_binding(KEYBINDING, "login", login)
+
+var credentials = require('./credentials')
+
 
 function printoverlay(toprint, opt) {
     s = ""
@@ -22,11 +20,6 @@ function printoverlay(toprint, opt) {
 function login() {
     item = 0
     scriptpath = mp.get_script_directory()
-
-    mp.add_key_binding("n", "next", next)
-    mp.add_key_binding("p", "previous", previous)
-    mp.add_key_binding("d", "download", download)
-    mp.add_key_binding("e", "exit", exit)
     ov = mp.create_osd_overlay("ass-events")
 
     output = [["{\\an5}{\\b1}", "Opensubtitle Search...logging in"]]
@@ -34,6 +27,12 @@ function login() {
     logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\login.ps1", credentials.consumerkey, credentials.username, credentials.password] }
     logindata = mp.utils.subprocess(logindetails)
     s = JSON.parse(logindata.stdout)
+    if(s.status !== 200){
+        mp.osd_message(JSON.stringify(s), 30)
+        exit() 
+        return
+
+    }
     credentials.token = s["token"]
     output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")...searching"]]
     printoverlay(output)
@@ -50,6 +49,15 @@ function fetch() {
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\fetch.ps1", credentials.consumerkey, credentials.token, fullpath, filename] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
+    if(!!data.error){
+        mp.osd_message(JSON.stringify(data), 30)
+        exit() 
+        return
+    }
+    mp.add_key_binding("n", "next", next)
+    mp.add_key_binding("p", "previous", previous)
+    mp.add_key_binding("d", "download", download)
+    mp.add_key_binding("e", "exit", exit)
     DrawOSD()
 }
 
@@ -58,7 +66,11 @@ function formatBooleans(isbool) {
 }
 
 function DrawOSD() {
-
+    if(!!data == false || data["data"].length == 0) {
+        mp.osd_message("No Results Found...", 30)
+        exit() 
+        return 
+    }
     id = data["data"][item]['attributes']['files'][0]["file_id"]
     filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
     uploaded_name = data["data"][item]['attributes']['uploader']["name"]
@@ -139,6 +151,18 @@ function download() {
     printoverlay(output, { append: true })
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\download.ps1", credentials.consumerkey, credentials.token, path, filename, id.toString()] }
     fetchsub = mp.utils.subprocess(fetchdetails)
+    dlinfo = JSON.parse(fetchsub.stdout)
+    if(!!dlinfo.error){
+        mp.osd_message(JSON.stringify(dlinfo), 30)
+        exit() 
+        return
+    }
+
+    if(!!dlinfo.msg){
+        mp.osd_message(JSON.stringify(dlinfo.msg))
+        mp.commandv("sub-add", dlinfo.tmp_path)
+    }
+    
     mp.set_property('sub-auto', 'all')
     mp.commandv('rescan_external_files','reselect')
     DrawOSD()
@@ -151,6 +175,3 @@ function exit() {
     mp.remove_key_binding("download")
     mp.remove_key_binding("exit")
 }
-
-
-mp.add_key_binding(KEYBINDING, "login", login)
