@@ -15,7 +15,7 @@ Install:
 run:
 ctrl-shift o 
 
-![screenshot](screenshot.png?raw=true "screenshot")
+![Yi Yi](Screenshot.png?raw=true "Yi Yi Mcdonalds")
 
 Todo:
 probably dont need to login each time
