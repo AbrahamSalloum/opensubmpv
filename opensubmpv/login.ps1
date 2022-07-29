@@ -19,8 +19,6 @@ try {
 catch {
     Write-Output $_.ErrorDetails.Message
     return
-    
 }
-
 
 Write-Output $response | ConvertTo-Json -Depth 100

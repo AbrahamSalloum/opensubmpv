@@ -1,8 +1,14 @@
 $consumerkey = $args[0]
 $jwt = $args[1]
-$file_path = $args[2]
-$filename = $args[3]
-$fileid = [int]$args[4]
+$full_file_path = $args[2]
+$fileid = [int]$args[3]
+
+
+
+$file_path = [System.IO.Path]::GetDirectoryName($full_file_path)
+$filename = [System.IO.Path]::GetFileName($full_file_path)
+
+
 
 $headers = @{
 	"Accept"        = "*/*"
@@ -18,8 +24,10 @@ $body = @{
 
 $url = "https://api.opensubtitles.com/api/v1/download"
 
-$newfile = $file_path + $filename + "." + $fileid + ".srt"
- 
+$NewName = $filename + "." + $fileid + ".srt"
+
+$newfile = Join-Path $file_path $NewName
+
 try {
 	$response = Invoke-RestMethod -Uri $url -Method POST -Headers $headers -Body $body
 	try {
@@ -48,22 +56,23 @@ catch {
 	return
 }
 
-try{
+try {
 	Copy-Item -Force -LiteralPath $tempFile -Destination $newfile -ErrorAction Stop
 	Write-Output $response | ConvertTo-Json -Depth 100
-} catch {
-	$NewName =  $filename + "." + $fileid + ".srt"
+}
+catch {
+	
 	$TMPpath = ($env:temp)
-	$p = $TMPpath+'\'+$NewName
+	$p = Join-Path $TMPpath $NewName
 
-	if(Test-Path -LiteralPath $p){
+	if (Test-Path -LiteralPath $p) {
 		$random = Get-Random
-		Rename-Item -LiteralPath $p -NewName ($NewName+"."+$random+".srt")
+		Rename-Item -LiteralPath $p -NewName ($NewName + "." + $random + ".srt")
 		
 	}
 	Rename-Item -Force -LiteralPath $tempFile -NewName $NewName 
 	Write-Output @{
-		"msg" = "permission problem...loading from temp"
+		"msg"      = "permission problem...loading from temp"
 		"tmp_path" = $p
 	} | ConvertTo-Json
  

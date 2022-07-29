@@ -1,8 +1,10 @@
+Add-Type -AssemblyName System.Web
+
 $consumerkey = $args[0]
 $jwt = $args[1]
 $full_file_path = $args[2]
-$filename = $args[3]
-
+$languages = $args[3]
+#$order_by = $args[4]
 $dataLength = 65536
 
 function LongSum([UInt64]$a, [UInt64]$b) { 
@@ -14,9 +16,9 @@ function StreamHash([IO.Stream]$stream) {
 	[UInt64]$lhash = 0
 	[byte[]]$buffer = New-Object byte[] $hashLength
 	$i = 0
-	while ( ($i -lt ($dataLength / $hashLength)) -and ($stream.Read($buffer,0,$hashLength) -gt 0) ) {
+	while ( ($i -lt ($dataLength / $hashLength)) -and ($stream.Read($buffer, 0, $hashLength) -gt 0) ) {
 		$i++
-		$lhash = LongSum $lhash ([BitConverter]::ToUInt64($buffer,0))
+		$lhash = LongSum $lhash ([BitConverter]::ToUInt64($buffer, 0))
 	}
 	$lhash
 }
@@ -35,8 +37,7 @@ function MovieHash([string]$path) {
 
 
 $moviehash = MovieHash $full_file_path
-
-$query = $filename -replace '\[|\]', '' -replace '\s', '+'
+$hash = $moviehash.PadLeft(16, '0')
 
 $header = @{
 	"Accept"        = "*/*"
@@ -47,11 +48,20 @@ $header = @{
 	
 }
 
-$url = "https://api.opensubtitles.com/api/v1/subtitles?" + "moviehash=" + $moviehash + "&query=" + $query
+#seems to work better if the extension removed and periods, dashes whitespace, and [] are replaved with spaces 
+$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path) -replace '\s|\.|\[|\]|-', ' '
 
- 
+$nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+$nvCollection.Add('moviehash', $hash)
+$nvCollection.Add('query', $filename)
+$nvCollection.Add('languages', $languages)
+#$nvCollection.Add('order_by', $order_by)
 
- 
+$uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles?'
+$uriRequest.Query = $nvCollection.ToString()
+
+$url = $uriRequest.Uri.OriginalString
+
 try {
 
 	$response = (Invoke-RestMethod -Uri $url -Method GET -Headers $header)

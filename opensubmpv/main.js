@@ -1,8 +1,8 @@
 KEYBINDING = "ctrl+shift+o"
 mp.add_key_binding(KEYBINDING, "login", login)
-
+languages = "en" //"en,fr,ar"
 var credentials = require('./credentials')
-
+order_by = "moviehash,all"
 
 function printoverlay(toprint, opt) {
     s = ""
@@ -37,16 +37,17 @@ function login() {
     output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")...searching"]]
     printoverlay(output)
 
-    filepath = mp.utils.split_path(mp.get_property("path"))
-    path = filepath[0]
-    filename = filepath[1]
-    fullpath = path + filename
+    filepath = mp.get_property("path")
+    duration_in_seconds = mp.get_property("duration")
+    // if(duration_in_seconds >= 4500) { //1.25 hours
+    //     order_by = "moviehash,movie"
+    // }
     fetch()
 }
 
 function fetch() {
 
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\fetch.ps1", credentials.consumerkey, credentials.token, fullpath, filename] }
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\fetch.ps1", credentials.consumerkey, credentials.token, filepath, languages] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
     if(!!data.error){
@@ -149,7 +150,7 @@ function download() {
 
     output = [["{\\an5}", "downloading..."]]
     printoverlay(output, { append: true })
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\download.ps1", credentials.consumerkey, credentials.token, path, filename, id.toString()] }
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\download.ps1", credentials.consumerkey, credentials.token, filepath, id.toString()] }
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
     if(!!dlinfo.error){
