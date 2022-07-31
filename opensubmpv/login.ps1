@@ -1,6 +1,11 @@
 $consumerkey = $args[0]
 $username = $args[1]
 $password = $args[2]
+#$number = [int]$args[3]
+
+#if ( $number % 2 -eq 0 ) { $add = '' } else { $add = 'hello' }
+
+
 
 $body = @{
     "username" = $username

@@ -4,7 +4,6 @@ $consumerkey = $args[0]
 $jwt = $args[1]
 $full_file_path = $args[2]
 $languages = $args[3]
-#$order_by = $args[4]
 $dataLength = 65536
 
 function LongSum([UInt64]$a, [UInt64]$b) { 
@@ -57,7 +56,7 @@ $nvCollection.Add('query', $filename)
 $nvCollection.Add('languages', $languages)
 #$nvCollection.Add('order_by', $order_by)
 
-$uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles?'
+$uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles'
 $uriRequest.Query = $nvCollection.ToString()
 
 $url = $uriRequest.Uri.OriginalString

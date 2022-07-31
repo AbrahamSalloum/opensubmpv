@@ -1,7 +1,7 @@
 $consumerkey = $args[0]
 $jwt = $args[1]
 $full_file_path = $args[2]
-$fileid = [int]$args[3]
+$fileid = $args[3]
 
 
 
@@ -19,7 +19,7 @@ $headers = @{
 } 
 
 $body = @{
-	"file_id" = $fileid
+	"file_id" = [int]$fileid
 } | ConvertTo-Json
 
 $url = "https://api.opensubtitles.com/api/v1/download"

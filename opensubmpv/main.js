@@ -1,8 +1,7 @@
 KEYBINDING = "ctrl+shift+o"
-mp.add_key_binding(KEYBINDING, "login", login)
+mp.add_key_binding(KEYBINDING, "start", start)
 languages = "en" //"en,fr,ar"
 var credentials = require('./credentials')
-order_by = "moviehash,all"
 
 function printoverlay(toprint, opt) {
     s = ""
@@ -17,49 +16,52 @@ function printoverlay(toprint, opt) {
     ov.update(s)
 }
 
-function login() {
-    item = 0
-    scriptpath = mp.get_script_directory()
-    ov = mp.create_osd_overlay("ass-events")
-
-    output = [["{\\an5}{\\b1}", "Opensubtitle Search...logging in"]]
+function authenticate() {
+    output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
-    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\login.ps1", credentials.consumerkey, credentials.username, credentials.password] }
+    script = scriptpath + "\\login.ps1"
+    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.username, credentials.password] }
     logindata = mp.utils.subprocess(logindetails)
     s = JSON.parse(logindata.stdout)
-    if(s.status !== 200){
-        mp.osd_message(JSON.stringify(s), 30)
-        exit() 
+    if (s.status !== 200) {
+        mp.osd_message(JSON.stringify(s), 15)
+        exit()
         return
 
     }
     credentials.token = s["token"]
-    output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")...searching"]]
+    output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")"]]
     printoverlay(output)
+}
 
+function start() {
+    item = 0
+    scriptpath = mp.get_script_directory()
+    ov = mp.create_osd_overlay("ass-events")
     filepath = mp.get_property("path")
-    duration_in_seconds = mp.get_property("duration")
-    // if(duration_in_seconds >= 4500) { //1.25 hours
-    //     order_by = "moviehash,movie"
-    // }
+    output = [["{\\an5}{\\b1}", "Opensubtitle Searching"]]
+    printoverlay(output)
     fetch()
+
 }
 
 function fetch() {
-
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\fetch.ps1", credentials.consumerkey, credentials.token, filepath, languages] }
+    script = scriptpath + "\\fetch.ps1"
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath, languages] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
-    if(!!data.error){
-        mp.osd_message(JSON.stringify(data), 30)
-        exit() 
+    if (!!data.error) {
+        mp.osd_message(JSON.stringify(data), 15)
+        exit()
         return
     }
+
     mp.add_key_binding("n", "next", next)
+    mp.add_key_binding("e", "exit", exit)
     mp.add_key_binding("p", "previous", previous)
     mp.add_key_binding("d", "download", download)
-    mp.add_key_binding("e", "exit", exit)
     DrawOSD()
+
 }
 
 function formatBooleans(isbool) {
@@ -67,10 +69,10 @@ function formatBooleans(isbool) {
 }
 
 function DrawOSD() {
-    if(!!data == false || data["data"].length == 0) {
+    if (!!data == false || data["data"].length == 0) {
         mp.osd_message("No Results Found...", 30)
-        exit() 
-        return 
+        exit()
+        return
     }
     id = data["data"][item]['attributes']['files'][0]["file_id"]
     filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
@@ -90,10 +92,10 @@ function DrawOSD() {
     ai_translated = data["data"][item]['attributes']["ai_translated"]
 
     var output = [
-        ["{\\b1}", (item+1)+'/'+data["data"].length, "{\\b0}"],
+        ["{\\b1}", (item + 1) + '/' + data["data"].length, "{\\b0}"],
         ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub],
         ["{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match), "{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
-        ["{\\b1}", "Uploaded By:", "{\\b0}", uploaded_name, "(" + uploader_rank + ")"],
+        ["{\\b1}", "Sub id:", "{\\b0}", id, "{\\b1}", "Uploaded By:", "{\\b0}", uploaded_name, "(" + uploader_rank + ")"],
         ["{\\b1}", "HD:", "{\\b0}", formatBooleans(ishd), "{\\b1}", "Foriegn Parts Only:", "{\\b0}", formatBooleans(isforeign_parts_only), "{\\b1}", "Hearing Impaired:", "{\\b0}", formatBooleans(ishearing_impired)],
         ["{\\b1}", "Title:", "{\\b0}", feature_title],
         ["{\\b1}", "Year:", "{\\b0}", feature_year, "{\\b1}", "Type:", "{\\b0}", feature_type],
@@ -106,26 +108,17 @@ function DrawOSD() {
     sub_points = data["data"][item]['attributes']['points']
     sub_votes = data["data"][item]['attributes']['votes']
 
-    output = [
-        ["{\\b1}", "Sub Rating:", "{\\b0}", sub_rating,
-            "{\\b1}", "Downloads:", "{\\b0}", sub_dlcount,
-            "{\\b1}", "Votes:", "{\\b0}", sub_votes]
-    ]
+    output = [["{\\b1}", "Sub Rating:", "{\\b0}", sub_rating, "{\\b1}", "Downloads:", "{\\b0}", sub_dlcount, "{\\b1}", "Votes:", "{\\b0}", sub_votes]]
 
     printoverlay(output, { append: true })
 
     entry = []
-    if(machine_translated) entry.push("{\\b1}", "Machine Translated:", "{\\b0}", formatBooleans(machine_translated))
-    if(ai_translated) entry.push("{\\b1}", "AI Translated:","{\\b0}", formatBooleans(ai_translated))
+    if (machine_translated) entry.push("{\\b1}", "Machine Translated:", "{\\b0}", formatBooleans(machine_translated))
+    if (ai_translated) entry.push("{\\b1}", "AI Translated:", "{\\b0}", formatBooleans(ai_translated))
     output = [entry]
     printoverlay(output, { append: true })
 
-    output = [["{\\an2}",
-        "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load",
-        "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext",
-        "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious",
-        "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"
-    ]]
+    output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
 
     printoverlay(output, { append: true })
 }
@@ -147,25 +140,43 @@ function previous() {
 }
 
 function download() {
+    token_file = scriptpath + "\\token"
+    token = mp.utils.read_file(token_file)
+    mp.osd_message(token)
+    if (!!token == false) {
+        authenticate()
+        token = credentials["token"]
+        mp.utils.write_file("file://"+token_file, token)
+    }
 
     output = [["{\\an5}", "downloading..."]]
     printoverlay(output, { append: true })
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", scriptpath + "\\download.ps1", credentials.consumerkey, credentials.token, filepath, id.toString()] }
+    script = scriptpath + "\\download.ps1"
+    file_id = id.toString().trim()
+
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, token, filepath, file_id] }
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
-    if(!!dlinfo.error){
-        mp.osd_message(JSON.stringify(dlinfo), 30)
-        exit() 
-        return
+    if (!!dlinfo.error) {
+        if (dlinfo.error == 403) {
+            authenticate()
+            mp.utils.write_file("file://"+token_file, credentials["token"])
+            download()
+        } else {
+            ov.remove()
+            mp.osd_message(JSON.stringify(dlinfo), 30)
+            mp.utils.write_file("file://"+token_file, '')
+            exit()
+            return
+        }
     }
 
-    if(!!dlinfo.msg){
+    if (!!dlinfo.msg) {
         mp.osd_message(JSON.stringify(dlinfo.msg))
         mp.commandv("sub-add", dlinfo.tmp_path)
     }
-    
-    mp.set_property('sub-auto', 'all')
-    mp.commandv('rescan_external_files','reselect')
+    mp.set_property('sub-auto', 'fuzzy')
+    mp.commandv('rescan_external_files', 'reselect')
     DrawOSD()
 }
 
