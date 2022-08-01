@@ -17,6 +17,7 @@ function printoverlay(toprint, opt) {
 }
 
 function authenticate() {
+    
     output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
     script = scriptpath + "\\login.ps1"
@@ -24,10 +25,7 @@ function authenticate() {
     logindata = mp.utils.subprocess(logindetails)
     s = JSON.parse(logindata.stdout)
     if (s.status !== 200) {
-        mp.osd_message(JSON.stringify(s), 15)
-        exit()
         return
-
     }
     credentials.token = s["token"]
     output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")"]]
@@ -36,6 +34,7 @@ function authenticate() {
 
 function start() {
     item = 0
+    login_attempts = 0
     scriptpath = mp.get_script_directory()
     ov = mp.create_osd_overlay("ass-events")
     filepath = mp.get_property("path")
@@ -56,8 +55,8 @@ function fetch() {
         return
     }
 
-    mp.add_key_binding("n", "next", next)
     mp.add_key_binding("e", "exit", exit)
+    mp.add_key_binding("n", "next", next)
     mp.add_key_binding("p", "previous", previous)
     mp.add_key_binding("d", "download", download)
     DrawOSD()
@@ -142,11 +141,10 @@ function previous() {
 function download() {
     token_file = scriptpath + "\\token"
     token = mp.utils.read_file(token_file)
-    mp.osd_message(token)
     if (!!token == false) {
         authenticate()
-        token = credentials["token"]
-        mp.utils.write_file("file://"+token_file, token)
+        mp.utils.write_file("file://" + token_file, credentials.token)
+        token = credentials.token
     }
 
     output = [["{\\an5}", "downloading..."]]
@@ -158,15 +156,16 @@ function download() {
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
     if (!!dlinfo.error) {
-        if (dlinfo.error == 403) {
+        if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // 2 login attemtps
+            login_attempts = login_attempts + 1
             authenticate()
-            mp.utils.write_file("file://"+token_file, credentials["token"])
-            download()
+            mp.utils.write_file("file://" + token_file, credentials["token"])
+            return download()
+            
         } else {
-            ov.remove()
-            mp.osd_message(JSON.stringify(dlinfo), 30)
-            mp.utils.write_file("file://"+token_file, '')
             exit()
+            mp.osd_message(JSON.stringify(dlinfo), 30)
+            mp.utils.write_file("file://" + token_file, '')
             return
         }
     }
@@ -175,6 +174,8 @@ function download() {
         mp.osd_message(JSON.stringify(dlinfo.msg))
         mp.commandv("sub-add", dlinfo.tmp_path)
     }
+
+    login_attempts = 0
     mp.set_property('sub-auto', 'fuzzy')
     mp.commandv('rescan_external_files', 'reselect')
     DrawOSD()

@@ -47,19 +47,22 @@ $header = @{
 	
 }
 
-#seems to work better if the extension removed and periods, dashes whitespace, and [] are replaved with spaces 
-$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path) -replace '\s|\.|\[|\]|-', ' '
+#seems to work better if these are removed and replaced with spaces 
+$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path) -replace "\s|!|\*|'|\(|\)|;|:|@|&|=|\+|\$|,|/|\?|%|#|\[|\]|\^|_", ' '
+
+
 
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 $nvCollection.Add('moviehash', $hash)
 $nvCollection.Add('query', $filename)
 $nvCollection.Add('languages', $languages)
-#$nvCollection.Add('order_by', $order_by)
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles'
 $uriRequest.Query = $nvCollection.ToString()
 
 $url = $uriRequest.Uri.OriginalString
+
+
 
 try {
 
