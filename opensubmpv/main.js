@@ -20,7 +20,7 @@ function authenticate() {
     
     output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
-    script = scriptpath + "\\login.ps1"
+    script = mp.utils.join_path(scriptpath, "login.ps1")
     logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.username, credentials.password] }
     logindata = mp.utils.subprocess(logindetails)
     s = JSON.parse(logindata.stdout)
@@ -45,7 +45,7 @@ function start() {
 }
 
 function fetch() {
-    script = scriptpath + "\\fetch.ps1"
+    script = mp.utils.join_path(scriptpath, "fetch.ps1")
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath, languages] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
@@ -139,7 +139,7 @@ function previous() {
 }
 
 function download() {
-    token_file = scriptpath + "\\token"
+    token_file = mp.utils.join_path(scriptpath, "token")
     token = mp.utils.read_file(token_file)
     if (!!token == false) {
         authenticate()
@@ -149,15 +149,15 @@ function download() {
 
     output = [["{\\an5}", "downloading..."]]
     printoverlay(output, { append: true })
-    script = scriptpath + "\\download.ps1"
+    script = mp.utils.join_path(scriptpath, "download.ps1")
     file_id = id.toString().trim()
 
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, token, filepath, file_id] }
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
     if (!!dlinfo.error) {
-        if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // 2 login attemtps
-            login_attempts = login_attempts + 1
+        if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // max 2 login attemtps
+            login_attempts++
             authenticate()
             mp.utils.write_file("file://" + token_file, credentials["token"])
             return download()
