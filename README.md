@@ -5,7 +5,7 @@ This finds subtitles from opensubtitle.com and presents each on OSD for user to 
 It will download the sub  to the same directory as the video and load. If it can't write to that directory it will load the sub from temp.
 
 #Requirements:
-* windows 
+
 * powershell 5.1 (older/newer may work idk)
 * mpv
 
