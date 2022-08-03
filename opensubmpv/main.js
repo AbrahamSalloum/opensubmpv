@@ -2,7 +2,7 @@ KEYBINDING = "ctrl+shift+o"
 mp.add_key_binding(KEYBINDING, "start", start)
 languages = "en" //"en,fr,ar"
 var credentials = require('./credentials')
-
+var options = {}
 function printoverlay(toprint, opt) {
     s = ""
     if (!!opt && !!opt.append) s = ov.data
@@ -44,9 +44,34 @@ function start() {
 
 }
 
+
+function guessit() {
+    output = [["{\\an5}{\\b1}", "trying super hard..."]]
+    printoverlay(output)
+    script = mp.utils.join_path(scriptpath, "guessit.ps1")
+    guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath] }
+    runguessit = mp.utils.subprocess(guessdetails)
+    guessitdata = JSON.parse(runguessit.stdout)
+    if (!!guessitdata.error) {
+        mp.osd_message(JSON.stringify(data), 15)
+        exit()
+        return
+    }
+
+     options = {
+        year: guessitdata.year, 
+        type: guessitdata.type, 
+        title: guessitdata.title,
+
+    }
+   
+    fetch()
+
+}
+
 function fetch() {
     script = mp.utils.join_path(scriptpath, "fetch.ps1")
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath, languages] }
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath, languages, JSON.stringify(options)] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
     if (!!data.error) {
@@ -59,6 +84,7 @@ function fetch() {
     mp.add_key_binding("n", "next", next)
     mp.add_key_binding("p", "previous", previous)
     mp.add_key_binding("d", "download", download)
+    mp.add_key_binding("t", "guessit", guessit)
     DrawOSD()
 
 }
@@ -69,9 +95,11 @@ function formatBooleans(isbool) {
 
 function DrawOSD() {
     if (!!data == false || data["data"].length == 0) {
-        mp.osd_message("No Results Found...", 30)
-        exit()
+        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder"]]
+
+        printoverlay(output, { append: true })
         return
+        
     }
     id = data["data"][item]['attributes']['files'][0]["file_id"]
     filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
@@ -117,7 +145,7 @@ function DrawOSD() {
     output = [entry]
     printoverlay(output, { append: true })
 
-    output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
+    output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
 
     printoverlay(output, { append: true })
 }

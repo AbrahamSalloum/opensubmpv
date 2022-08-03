@@ -4,6 +4,9 @@ $consumerkey = $args[0]
 $jwt = $args[1]
 $full_file_path = $args[2]
 $languages = $args[3]
+$options = $args[4]  | ConvertFrom-Json
+
+
 $dataLength = 65536
 
 function LongSum([UInt64]$a, [UInt64]$b) { 
@@ -49,16 +52,34 @@ $header = @{
 
 
 $filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
+
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+
+
+if ($options.title) {
+	$nvCollection.Add('query', $options.title)
+}
+else {
+	
+	$nvCollection.Add('query', $filename)
+}
+
 $nvCollection.Add('moviehash', $hash)
-$nvCollection.Add('query', $filename)
+
 $nvCollection.Add('languages', $languages)
+if ($options.year) {
+	$nvCollection.Add('year', $options.year)
+}
+
+$nvCollection.Add('type', "All")
+
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles'
 $uriRequest.Query = $nvCollection.ToString()
 
 $url = $uriRequest.Uri.OriginalString
- 
+
+; 
 
 try {
 
