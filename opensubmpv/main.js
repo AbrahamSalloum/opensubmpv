@@ -1,8 +1,10 @@
 KEYBINDING = "ctrl+shift+o"
 mp.add_key_binding(KEYBINDING, "start", start)
+
 languages = "en" //"en,fr,ar"
 var credentials = require('./credentials')
 var options = {}
+
 function printoverlay(toprint, opt) {
     s = ""
     if (!!opt && !!opt.append) s = ov.data
@@ -17,7 +19,7 @@ function printoverlay(toprint, opt) {
 }
 
 function authenticate() {
-    
+
     output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "login.ps1")
@@ -38,10 +40,10 @@ function start() {
     scriptpath = mp.get_script_directory()
     ov = mp.create_osd_overlay("ass-events")
     filepath = mp.get_property("path")
-    output = [["{\\an5}{\\b1}", "Opensubtitle Searching"]]
+    output = [["{\\an5}{\\b1}", "Opensubtitle Searching", "{\\an2}", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
     printoverlay(output)
+    mp.add_key_binding("e", "exit", exit)
     fetch()
-
 }
 
 
@@ -58,15 +60,14 @@ function guessit() {
         return
     }
 
-     options = {
-        year: guessitdata.year, 
-        type: guessitdata.type, 
+    options = {
+        year: guessitdata.year,
+        type: guessitdata.type,
         title: guessitdata.title,
 
     }
-   
-    fetch()
 
+    fetch()
 }
 
 function fetch() {
@@ -80,11 +81,12 @@ function fetch() {
         return
     }
 
-    mp.add_key_binding("e", "exit", exit)
+
     mp.add_key_binding("n", "next", next)
     mp.add_key_binding("p", "previous", previous)
     mp.add_key_binding("d", "download", download)
     mp.add_key_binding("t", "guessit", guessit)
+    options = {}
     DrawOSD()
 
 }
@@ -94,12 +96,12 @@ function formatBooleans(isbool) {
 }
 
 function DrawOSD() {
+
     if (!!data == false || data["data"].length == 0) {
-        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder"]]
+        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
 
         printoverlay(output, { append: true })
         return
-        
     }
     id = data["data"][item]['attributes']['files'][0]["file_id"]
     filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
@@ -189,7 +191,7 @@ function download() {
             authenticate()
             mp.utils.write_file("file://" + token_file, credentials["token"])
             return download()
-            
+
         } else {
             exit()
             mp.osd_message(JSON.stringify(dlinfo), 30)
@@ -214,5 +216,6 @@ function exit() {
     mp.remove_key_binding("next")
     mp.remove_key_binding("previous")
     mp.remove_key_binding("download")
+    mp.remove_key_binding("guessit")
     mp.remove_key_binding("exit")
 }

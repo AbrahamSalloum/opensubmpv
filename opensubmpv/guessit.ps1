@@ -17,7 +17,7 @@ $header = @{
 
 $filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
 
-$folderName = (Get-Item $full_file_path).Directory.Name
+#$folderName = (Get-Item $full_file_path).Directory.Name
 
 
 

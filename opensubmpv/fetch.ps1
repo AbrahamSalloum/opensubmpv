@@ -79,8 +79,6 @@ $uriRequest.Query = $nvCollection.ToString()
 
 $url = $uriRequest.Uri.OriginalString
 
-; 
-
 try {
 
 	$response = (Invoke-RestMethod -Uri $url.ToLower() -Method GET -Headers $header)
