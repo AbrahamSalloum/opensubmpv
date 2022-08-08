@@ -16,4 +16,4 @@ Install:
 run:
 * ctrl-shift-o 
 
-![Yi Yi](Screenshot_1.png?raw=true "Yi Yi Mcdonalds")
+![Yi Yi](Screenshot_1.png?raw=true "Yi Yi Mcdonalds scene")
