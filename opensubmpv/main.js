@@ -35,10 +35,13 @@ function authenticate() {
 }
 
 function start() {
+    mp.register_event("file-loaded", exit)
+
     item = 0
     login_attempts = 0
     scriptpath = mp.get_script_directory()
     ov = mp.create_osd_overlay("ass-events")
+    
     filepath = mp.get_property("path")
     output = [["{\\an5}{\\b1}", "Opensubtitle Searching", "{\\an2}", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
     printoverlay(output)
@@ -71,6 +74,8 @@ function guessit() {
 }
 
 function fetch() {
+
+   
     script = mp.utils.join_path(scriptpath, "fetch.ps1")
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath, languages, JSON.stringify(options)] }
     fetchdata = mp.utils.subprocess(fetchdetails)
@@ -87,6 +92,7 @@ function fetch() {
     mp.add_key_binding("d", "download", download)
     mp.add_key_binding("t", "guessit", guessit)
     options = {}
+    ov.remove()
     DrawOSD()
 
 }
