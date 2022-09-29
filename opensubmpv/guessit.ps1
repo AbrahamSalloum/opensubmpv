@@ -14,12 +14,7 @@ $header = @{
 	
 }
 
-
 $filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
-
-#$folderName = (Get-Item $full_file_path).Directory.Name
-
-
 
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 $nvCollection.Add('filename',$filename)  # $folderName+" "

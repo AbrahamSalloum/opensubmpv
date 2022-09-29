@@ -1,8 +1,8 @@
-KEYBINDING = "ctrl+shift+o"
-mp.add_key_binding(KEYBINDING, "start", start)
+var settings = require('./settings')
 
-languages = "en" //"en,fr,ar"
-var credentials = require('./credentials')
+KEYBINDING = settings.keybinding; 
+mp.add_key_binding(KEYBINDING, "start", start)
+languages = settings.languages; "en" 
 var options = {}
 
 function printoverlay(toprint, opt) {
@@ -23,13 +23,13 @@ function authenticate() {
     output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "login.ps1")
-    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.username, credentials.password] }
+    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.username, settings.password] }
     logindata = mp.utils.subprocess(logindetails)
     s = JSON.parse(logindata.stdout)
     if (s.status !== 200) {
         return
     }
-    credentials.token = s["token"]
+    settings.token = s["token"]
     output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")"]]
     printoverlay(output)
 }
@@ -54,7 +54,7 @@ function guessit() {
     output = [["{\\an5}{\\b1}", "trying super hard..."]]
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "guessit.ps1")
-    guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath] }
+    guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.token, filepath] }
     runguessit = mp.utils.subprocess(guessdetails)
     guessitdata = JSON.parse(runguessit.stdout)
     if (!!guessitdata.error) {
@@ -77,7 +77,7 @@ function fetch() {
 
    
     script = mp.utils.join_path(scriptpath, "fetch.ps1")
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, credentials.token, filepath, languages, JSON.stringify(options)] }
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.token, filepath, languages, JSON.stringify(options)] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
     if (!!data.error) {
@@ -179,8 +179,8 @@ function download() {
     token = mp.utils.read_file(token_file)
     if (!!token == false) {
         authenticate()
-        mp.utils.write_file("file://" + token_file, credentials.token)
-        token = credentials.token
+        mp.utils.write_file("file://" + token_file, settings.token)
+        token = settings.token
     }
 
     output = [["{\\an5}", "downloading..."]]
@@ -188,14 +188,14 @@ function download() {
     script = mp.utils.join_path(scriptpath, "download.ps1")
     file_id = id.toString().trim()
 
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, credentials.consumerkey, token, filepath, file_id] }
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, token, filepath, file_id] }
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
     if (!!dlinfo.error) {
         if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // max 2 login attemtps
             login_attempts++
             authenticate()
-            mp.utils.write_file("file://" + token_file, credentials["token"])
+            mp.utils.write_file("file://" + token_file, settings["token"])
             return download()
 
         } else {
