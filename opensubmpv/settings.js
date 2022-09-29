@@ -10,5 +10,3 @@ var credentials = {
 }
 
 module.exports =  credentials
-
-module.exports =  credentials
