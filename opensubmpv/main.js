@@ -2,7 +2,7 @@ var settings = require('./settings')
 
 KEYBINDING = settings.keybinding; 
 mp.add_key_binding(KEYBINDING, "start", start)
-languages = settings.languages; "en" 
+languages = settings.languages; //"en" 
 var options = {}
 
 function printoverlay(toprint, opt) {
