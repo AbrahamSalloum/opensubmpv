@@ -1,6 +1,8 @@
-$consumerkey = $args[0]
-$username = $args[1]
-$password = $args[2]
+$o = $args[0] | ConvertFrom-Json
+
+$consumerkey = $o.consumerkey
+$username = $o.username
+$password = $o.password
 
 $body = @{
     "username" = $username

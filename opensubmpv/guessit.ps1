@@ -1,8 +1,10 @@
 Add-Type -AssemblyName System.Web
 
-$consumerkey = $args[0]
-$jwt = $args[1]
-$full_file_path = $args[2]
+$o  = $args[0] | ConvertFrom-Json
+
+$consumerkey = $o.consumerkey
+$jwt = $o.token
+$full_file_path = $o.filepath
 
 
 $header = @{

@@ -1,10 +1,12 @@
 Add-Type -AssemblyName System.Web
 
-$consumerkey = $args[0]
-$jwt = $args[1]
-$full_file_path = $args[2]
-$languages = $args[3]
-$options = $args[4]  | ConvertFrom-Json
+$o  = $args[0] | ConvertFrom-Json
+
+$consumerkey = $o.consumerkey
+$jwt = $o.token
+$full_file_path = $o.filepath
+$languages = $o.languages
+$options = $o.options
 
 
 $dataLength = 65536
@@ -43,7 +45,7 @@ if($full_file_path -match '^http'){
 	#$hash = ''
 	
 } else {
-	$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower()
+	#$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower()
 	$moviehash = MovieHash $full_file_path
 	$hash = $moviehash.PadLeft(16, '0')
 }
@@ -65,20 +67,17 @@ $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 if ($options.title) {
 	$nvCollection.Add('query', $options.title)
 }
-else {
-	$nvCollection.Add('query', $filename)
-}
 
 if($hash){
 	$nvCollection.Add('moviehash', $hash)
 }
 
 
-$nvCollection.Add('languages', $languages)
 if ($options.year) {
 	$nvCollection.Add('year', $options.year)
 }
 
+$nvCollection.Add('languages', $languages)
 $nvCollection.Add('type', "All")
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles'

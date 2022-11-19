@@ -23,8 +23,14 @@ function authenticate() {
     output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "login.ps1")
-    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.username, settings.password] }
+    var o = {
+        consumerkey: settings.consumerkey, 
+        username: settings.username, 
+        password: settings.password
+    }
+    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     logindata = mp.utils.subprocess(logindetails)
+    mp.msg.error(JSON.stringify(logindata))
     s = JSON.parse(logindata.stdout)
     if (s.status !== 200) {
         return
@@ -54,7 +60,12 @@ function guessit() {
     output = [["{\\an5}{\\b1}", "trying super hard..."]]
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "guessit.ps1")
-    guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.token, filepath] }
+    var o = {
+        consumerkey: settings.consumerkey,
+        token: settings.token,
+        filepath: filepath
+    }
+    guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     runguessit = mp.utils.subprocess(guessdetails)
     guessitdata = JSON.parse(runguessit.stdout)
     if (!!guessitdata.error) {
@@ -67,7 +78,6 @@ function guessit() {
         year: guessitdata.year,
         type: guessitdata.type,
         title: guessitdata.title,
-
     }
 
     fetch()
@@ -76,7 +86,15 @@ function guessit() {
 function fetch() {
 
     script = mp.utils.join_path(scriptpath, "fetch.ps1")
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.token, filepath, languages, JSON.stringify(options)] }
+    var o = {
+        consumerkey: settings.consumerkey, 
+        token: settings.token, 
+        filepath: filepath, 
+        options: options,
+        languages: languages
+    }
+    
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
     if (!!data.error) {
@@ -186,7 +204,6 @@ function download() {
     printoverlay(output, { append: true })
     script = mp.utils.join_path(scriptpath, "download.ps1")
     file_id = id.toString().trim()
-    mp.osd_message(JSON.stringify(file_id), 30)
     var o = {
         consumerkey: settings.consumerkey, 
         token: token, 
@@ -209,8 +226,6 @@ function download() {
         } else {
             mp.msg.error(JSON.stringify(dlinfo))
             exit()
-            // mp.osd_message(JSON.stringify(dlinfo), 30)
-            // mp.utils.write_file("file://" + token_file, '')
             return
         }
     }

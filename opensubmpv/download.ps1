@@ -14,9 +14,11 @@ $headers = @{
 	"Authorization" = "Bearer " + $jwt
 } 
 
+
 $body = @{
 	"file_id" = [int]$fileid
 } | ConvertTo-Json
+
 
 $random = Get-Random
 $NewName = $title + "." + $random + "." + $fileid + ".srt"
@@ -24,18 +26,16 @@ $NewName = $NewName.Split([IO.Path]::GetInvalidFileNameChars()) -join ''
 
 if($full_file_path -match '^http'){
 	$file_path = ($env:temp)
-	
 } else {
 	$file_path = [System.IO.Path]::GetDirectoryName($full_file_path)
 }
 
 $newfile = Join-Path $file_path $NewName
 	
-
 try {
 
 	$url = "https://api.opensubtitles.com/api/v1/download"
-	$response = Invoke-RestMethod -Uri $url -Method POST -Headers $headers -Body $body
+	$response = Invoke-RestMethod -Uri $url -Method POST -Headers $headers -Body $body 
 	$link = $response.link 
 	try {
 		try {
@@ -51,7 +51,7 @@ try {
 		Write-Output @{
 			'description' = $_
 			'error'       = $_.Exception.Response.StatusCode 
-			"details"     = $_.Exception.Response
+			"details"     = $_.Exception
 	 } | ConvertTo-Json
 		
 		return
@@ -60,36 +60,27 @@ try {
 catch {
 	Write-Output @{
 		'description' = "API Error"
-		'error'       = $response
-		"details"     = $response
+		'error'       = $_.Exception.Message
+		"details"     =$_.Exception
  } | ConvertTo-Json
 	
 	return
 }
 
 try {
-	#Copy-Item -Force -LiteralPath $tempFile -Destination $newfile -ErrorAction Stop
-	Rename-Item -Force -LiteralPath $tempFile -NewName  $NewName
-	Write-Output @{
-		"msg"      = "loading sub..."
-		"tmp_path" = $newfile
-	} | ConvertTo-Json
-	return
-}
-catch {
+	
+	Copy-Item -Force -LiteralPath $tempFile -Destination $newfile -ErrorAction Stop
+	$msg = "sub loaded..."
+} catch {
 	
 	$TMPpath = ($env:temp)
-	$p = Join-Path $TMPpath $NewName
-
-	if (Test-Path -LiteralPath $p) {
-		$random = Get-Random
-		Rename-Item -LiteralPath $p -NewName ($NewName + "." + $random + ".srt")
-		
-	}
-	Rename-Item -Force -LiteralPath $tempFile -NewName $NewName 
-	Write-Output @{
-		"msg"      = "permission problem...loading from temp"
-		"tmp_path" = $p
-	} | ConvertTo-Json
- 
+	$newfile = Join-Path $TMPpath $NewName
+	Rename-Item -Force -LiteralPath $tempFile -NewName $newfile
+	$msg = "permission problem...loading from temp"
 }
+
+Write-Output @{
+	"msg"      = $msg
+	"tmp_path" = $newfile
+} | ConvertTo-Json
+return
