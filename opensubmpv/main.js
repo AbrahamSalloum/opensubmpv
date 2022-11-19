@@ -2,7 +2,7 @@ var settings = require('./settings')
 
 KEYBINDING = settings.keybinding; 
 mp.add_key_binding(KEYBINDING, "start", start)
-languages = settings.languages; //"en" 
+languages = settings.languages; "en" 
 var options = {}
 
 function printoverlay(toprint, opt) {
@@ -36,7 +36,7 @@ function authenticate() {
 
 function start() {
     mp.register_event("file-loaded", exit)
-
+    options = {'title': mp.get_property('media-title')}
     item = 0
     login_attempts = 0
     scriptpath = mp.get_script_directory()
@@ -75,7 +75,6 @@ function guessit() {
 
 function fetch() {
 
-   
     script = mp.utils.join_path(scriptpath, "fetch.ps1")
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, settings.token, filepath, languages, JSON.stringify(options)] }
     fetchdata = mp.utils.subprocess(fetchdetails)
@@ -91,7 +90,7 @@ function fetch() {
     mp.add_key_binding("p", "previous", previous)
     mp.add_key_binding("d", "download", download)
     mp.add_key_binding("t", "guessit", guessit)
-    options = {}
+    options = {'title':  mp.get_property('media-title')}
     ov.remove()
     DrawOSD()
 
@@ -187,21 +186,31 @@ function download() {
     printoverlay(output, { append: true })
     script = mp.utils.join_path(scriptpath, "download.ps1")
     file_id = id.toString().trim()
+    mp.osd_message(JSON.stringify(file_id), 30)
+    var o = {
+        consumerkey: settings.consumerkey, 
+        token: token, 
+        filepath: filepath, 
+        file_id: file_id,
+        title: options.title
+    }
 
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, settings.consumerkey, token, filepath, file_id] }
+    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
+    mp.msg.error(JSON.stringify(dlinfo))
     if (!!dlinfo.error) {
         if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // max 2 login attemtps
             login_attempts++
             authenticate()
-            mp.utils.write_file("file://" + token_file, settings["token"])
+            mp.utils.write_file("file://" + token_file, settings.token)
             return download()
 
         } else {
+            mp.msg.error(JSON.stringify(dlinfo))
             exit()
-            mp.osd_message(JSON.stringify(dlinfo), 30)
-            mp.utils.write_file("file://" + token_file, '')
+            // mp.osd_message(JSON.stringify(dlinfo), 30)
+            // mp.utils.write_file("file://" + token_file, '')
             return
         }
     }

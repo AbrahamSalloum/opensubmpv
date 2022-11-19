@@ -7,7 +7,7 @@ $full_file_path = $args[2]
 
 $header = @{
 	"Accept"        = "*/*"
-	"User-Agent"    = "poop"
+	"User-Agent"    = "opensubmpv"
 	"Content-Type"  = "application/json"
 	"Api-Key"       = $consumerkey
 	"Authorization" = "Bearer " + $jwt
@@ -17,7 +17,7 @@ $header = @{
 $filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
 
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-$nvCollection.Add('filename',$filename)  # $folderName+" "
+$nvCollection.Add('filename',$filename)  
 
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1//utilities/guessit'

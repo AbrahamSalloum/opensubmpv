@@ -38,33 +38,41 @@ function MovieHash([string]$path) {
 }
 
 
-$moviehash = MovieHash $full_file_path
-$hash = $moviehash.PadLeft(16, '0')
+
+if($full_file_path -match '^http'){
+	#$hash = ''
+	
+} else {
+	$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower()
+	$moviehash = MovieHash $full_file_path
+	$hash = $moviehash.PadLeft(16, '0')
+}
+
+# $moviehash = MovieHash $full_file_path
+# $hash = $moviehash.PadLeft(16, '0')
 
 $header = @{
 	"Accept"        = "*/*"
-	"User-Agent"    = "poop"
+	"User-Agent"    = "opensubmpv"
 	"Content-Type"  = "application/json"
 	"Api-Key"       = $consumerkey
 	"Authorization" = "Bearer " + $jwt
 	
 }
 
-
-$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
-
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-
 
 if ($options.title) {
 	$nvCollection.Add('query', $options.title)
 }
 else {
-	
 	$nvCollection.Add('query', $filename)
 }
 
-$nvCollection.Add('moviehash', $hash)
+if($hash){
+	$nvCollection.Add('moviehash', $hash)
+}
+
 
 $nvCollection.Add('languages', $languages)
 if ($options.year) {
@@ -73,16 +81,14 @@ if ($options.year) {
 
 $nvCollection.Add('type', "All")
 
-
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles'
 $uriRequest.Query = $nvCollection.ToString()
 
 $url = $uriRequest.Uri.OriginalString
 
 try {
-
+	
 	$response = (Invoke-RestMethod -Uri $url.ToLower() -Method GET -Headers $header)
-
 }
 catch {
 	Write-Output @{
