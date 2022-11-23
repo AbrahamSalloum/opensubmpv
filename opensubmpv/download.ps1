@@ -5,6 +5,7 @@ $jwt = $o.token
 $full_file_path = $o.filepath
 $fileid = $o.file_id
 $title = $o.title
+$toTemp = $o.toTemp
 
 $headers = @{
 	"Accept"        = "*/*"
@@ -24,7 +25,7 @@ $random = Get-Random
 $NewName = $title + "." + $random + "." + $fileid + ".srt"
 $NewName = $NewName.Split([IO.Path]::GetInvalidFileNameChars()) -join ''
 
-if($full_file_path -match '^http'){
+if($full_file_path -match '^http' -or $toTemp){
 	$file_path = ($env:temp)
 } else {
 	$file_path = [System.IO.Path]::GetDirectoryName($full_file_path)

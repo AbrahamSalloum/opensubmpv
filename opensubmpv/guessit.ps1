@@ -1,12 +1,9 @@
 Add-Type -AssemblyName System.Web
 
-$o  = $args[0] | ConvertFrom-Json
-
+$o = $args[0] | ConvertFrom-Json
 $consumerkey = $o.consumerkey
 $jwt = $o.token
 $full_file_path = $o.filepath
-
-
 $header = @{
 	"Accept"        = "*/*"
 	"User-Agent"    = "opensubmpv"
@@ -19,7 +16,7 @@ $header = @{
 $filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
 
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-$nvCollection.Add('filename',$filename)  
+$nvCollection.Add('filename', $filename)  
 
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1//utilities/guessit'
@@ -40,6 +37,5 @@ catch {
 	
 	return 
 }
-
 
 Write-Output $response | ConvertTo-Json -Depth 100

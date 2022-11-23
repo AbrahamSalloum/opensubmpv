@@ -1,8 +1,10 @@
-var settings = require('./settings')
 
+
+var credentials = require('./credentials');
+var settings = require('./settings');
 KEYBINDING = settings.keybinding; 
 mp.add_key_binding(KEYBINDING, "start", start)
-languages = settings.languages; "en" 
+languages = settings.languages;
 var options = {}
 
 function printoverlay(toprint, opt) {
@@ -24,9 +26,9 @@ function authenticate() {
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "login.ps1")
     var o = {
-        consumerkey: settings.consumerkey, 
-        username: settings.username, 
-        password: settings.password
+        consumerkey: credentials.consumerkey, 
+        username: credentials.username, 
+        password: credentials.password
     }
     logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     logindata = mp.utils.subprocess(logindetails)
@@ -35,7 +37,7 @@ function authenticate() {
     if (s.status !== 200) {
         return
     }
-    settings.token = s["token"]
+    credentials.token = s["token"]
     output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")"]]
     printoverlay(output)
 }
@@ -61,8 +63,8 @@ function guessit() {
     printoverlay(output)
     script = mp.utils.join_path(scriptpath, "guessit.ps1")
     var o = {
-        consumerkey: settings.consumerkey,
-        token: settings.token,
+        consumerkey: credentials.consumerkey,
+        token: credentials.token,
         filepath: filepath
     }
     guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
@@ -87,8 +89,8 @@ function fetch() {
 
     script = mp.utils.join_path(scriptpath, "fetch.ps1")
     var o = {
-        consumerkey: settings.consumerkey, 
-        token: settings.token, 
+        consumerkey: credentials.consumerkey, 
+        token: credentials.token, 
         filepath: filepath, 
         options: options,
         languages: languages
@@ -173,13 +175,18 @@ function DrawOSD() {
     output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
 
     printoverlay(output, { append: true })
+    
+    if(settings.autodlMovieHashMatch && ismoviehash_match && item == 0){
+        settings.autodlMovieHashMatch = false
+        download() 
+    }
 }
 
 function next() {
     item++
     if (item < data['data'].length) {
         DrawOSD()
-        return
+        return 
     } item = data['data'].length
 }
 
@@ -187,7 +194,7 @@ function previous() {
     item--
     if (item >= 0) {
         DrawOSD()
-        return
+        return 
     } item = 0
 }
 
@@ -196,8 +203,8 @@ function download() {
     token = mp.utils.read_file(token_file)
     if (!!token == false) {
         authenticate()
-        mp.utils.write_file("file://" + token_file, settings.token)
-        token = settings.token
+        mp.utils.write_file("file://" + token_file, credentials.token)
+        token = credentials.token
     }
 
     output = [["{\\an5}", "downloading..."]]
@@ -205,11 +212,12 @@ function download() {
     script = mp.utils.join_path(scriptpath, "download.ps1")
     file_id = id.toString().trim()
     var o = {
-        consumerkey: settings.consumerkey, 
+        consumerkey: credentials.consumerkey, 
         token: token, 
         filepath: filepath, 
         file_id: file_id,
-        title: options.title
+        title: options.title,
+        toTemp: settings.alwaysDltoTemp
     }
 
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
@@ -220,13 +228,13 @@ function download() {
         if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // max 2 login attemtps
             login_attempts++
             authenticate()
-            mp.utils.write_file("file://" + token_file, settings.token)
+            mp.utils.write_file("file://" + token_file, credentials.token)
             return download()
 
         } else {
             mp.msg.error(JSON.stringify(dlinfo))
             exit()
-            return
+            return 
         }
     }
 

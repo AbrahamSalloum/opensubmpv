@@ -1,12 +1,9 @@
 
-//this this is
-var credentials = {
-    "username": "abraham",
-    "password": "password1",
-    "consumerkey": "FAKEYFAKEY1",
-    "token": '', //keep this blank
-    "languages": "en",
-    "keybinding": "ctrl+shift+o",
-}
+var settings = {
+    languages: "en", // list of prefered languages, format:  en,cn,ar
+    keybinding: "ctrl+shift+o", // keybinding to launch this script
+    alwaysDltoTemp: false, //if true always download to temp rather then save to folder
+    autodlMovieHashMatch: true //if true and first result matches moviehash then auto download
+};
 
-module.exports =  credentials
+module.exports = settings
