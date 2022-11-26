@@ -2,6 +2,7 @@
 
 var credentials = require('./credentials');
 var settings = require('./settings');
+
 KEYBINDING = settings.keybinding; 
 mp.add_key_binding(KEYBINDING, "start", start)
 languages = settings.languages;

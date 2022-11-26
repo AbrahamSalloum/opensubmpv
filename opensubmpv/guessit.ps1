@@ -14,10 +14,8 @@ $header = @{
 }
 
 $filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower() 
-
 $nvCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 $nvCollection.Add('filename', $filename)  
-
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1//utilities/guessit'
 $uriRequest.Query = $nvCollection.ToString()
@@ -25,9 +23,7 @@ $uriRequest.Query = $nvCollection.ToString()
 $url = $uriRequest.Uri.OriginalString
   
 try {
-
 	$response = (Invoke-RestMethod -Uri $url.ToLower() -Method GET -Headers $header)
-
 }
 catch {
 	Write-Output @{

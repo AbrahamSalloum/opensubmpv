@@ -1,13 +1,11 @@
 Add-Type -AssemblyName System.Web
 
 $o  = $args[0] | ConvertFrom-Json
-
 $consumerkey = $o.consumerkey
 $jwt = $o.token
 $full_file_path = $o.filepath
 $languages = $o.languages
 $options = $o.options
-
 
 $dataLength = 65536
 
@@ -42,16 +40,12 @@ function MovieHash([string]$path) {
 
 
 if($full_file_path -match '^http'){
-	#$hash = ''
+	
 	
 } else {
-	#$filename = [System.IO.Path]::GetFileNameWithoutExtension($full_file_path).ToLower()
 	$moviehash = MovieHash $full_file_path
 	$hash = $moviehash.PadLeft(16, '0')
 }
-
-# $moviehash = MovieHash $full_file_path
-# $hash = $moviehash.PadLeft(16, '0')
 
 $header = @{
 	"Accept"        = "*/*"
@@ -72,7 +66,6 @@ if($hash){
 	$nvCollection.Add('moviehash', $hash)
 }
 
-
 if ($options.year) {
 	$nvCollection.Add('year', $options.year)
 }
@@ -86,7 +79,6 @@ $uriRequest.Query = $nvCollection.ToString()
 $url = $uriRequest.Uri.OriginalString
 
 try {
-	
 	$response = (Invoke-RestMethod -Uri $url.ToLower() -Method GET -Headers $header)
 }
 catch {
@@ -97,6 +89,5 @@ catch {
 	
 	return 
 }
-
 
 Write-Output $response | ConvertTo-Json -Depth 100
