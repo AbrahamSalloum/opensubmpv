@@ -6,8 +6,8 @@ var settings = require('./settings');
 KEYBINDING = settings.keybinding; 
 mp.add_key_binding(KEYBINDING, "start", start)
 languages = settings.languages;
-var options = {}
-
+var options = {};
+var sublistdown = new Array();
 function printoverlay(toprint, opt) {
     s = ""
     if (!!opt && !!opt.append) s = ov.data
@@ -33,7 +33,6 @@ function authenticate() {
     }
     logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     logindata = mp.utils.subprocess(logindetails)
-    mp.msg.error(JSON.stringify(logindata))
     s = JSON.parse(logindata.stdout)
     if (s.status !== 200) {
         return
@@ -44,8 +43,10 @@ function authenticate() {
 }
 
 function start() {
+    
     mp.register_event("file-loaded", exit)
     options = {'title': mp.get_property('media-title')}
+    sublistdown.push('subs')
     item = 0
     login_attempts = 0
     scriptpath = mp.get_script_directory()
@@ -129,25 +130,34 @@ function DrawOSD() {
         printoverlay(output, { append: true })
         return
     }
-    id = data["data"][item]['attributes']['files'][0]["file_id"]
-    filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
-    uploaded_name = data["data"][item]['attributes']['uploader']["name"]
-    ismoviehash_match = data["data"][item]['attributes']["moviehash_match"]
-    uploader_rank = data["data"][item]['attributes']['uploader']["rank"]
-    feature_title = data["data"][item]['attributes']['feature_details']['title']
-    feature_year = data["data"][item]['attributes']['feature_details']['year']
-    feature_type = data["data"][item]['attributes']['feature_details']['feature_type']
-    sublanguage = data["data"][item]['attributes']['language']
+     id = data["data"][item]['attributes']['files'][0]["file_id"]
+     filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
+     uploaded_name = data["data"][item]['attributes']['uploader']["name"]
+     ismoviehash_match = data["data"][item]['attributes']["moviehash_match"]
+     uploader_rank = data["data"][item]['attributes']['uploader']["rank"]
+     feature_title = data["data"][item]['attributes']['feature_details']['title']
+     feature_year = data["data"][item]['attributes']['feature_details']['year']
+     feature_type = data["data"][item]['attributes']['feature_details']['feature_type']
+     sublanguage = data["data"][item]['attributes']['language']
 
-    ishd = data["data"][item]['attributes']["hd"]
-    isforeign_parts_only = data["data"][item]['attributes']["foreign_parts_only"]
-    ishearing_impired = data["data"][item]['attributes']["hearing_impaired"]
+     ishd = data["data"][item]['attributes']["hd"]
+     isforeign_parts_only = data["data"][item]['attributes']["foreign_parts_only"]
+     ishearing_impired = data["data"][item]['attributes']["hearing_impaired"]
 
-    machine_translated = data["data"][item]['attributes']["hearing_impaired"]
-    ai_translated = data["data"][item]['attributes']["ai_translated"]
-
+     machine_translated = data["data"][item]['attributes']["hearing_impaired"]
+     ai_translated = data["data"][item]['attributes']["ai_translated"]
+    
+    function isSubdownloaded(id){
+        for (var s = 0; s < sublistdown.length; s++) {
+            if (sublistdown[s].toString().trim() == id.toString().trim()) {
+                return "{\\1c&H00FF00&}"+(item+1)+"{\\1c}"
+            }
+        }
+        return (item+1);
+    }
+    isdlnum = isSubdownloaded(id)
     var output = [
-        ["{\\b1}", (item + 1) + '/' + data["data"].length, "{\\b0}"],
+        ["{\\b1}", isdlnum + '/' + data["data"].length, "{\\b0}"],
         ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub],
         ["{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match), "{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
         ["{\\b1}", "Sub id:", "{\\b0}", id, "{\\b1}", "Uploaded By:", "{\\b0}", uploaded_name, "(" + uploader_rank + ")"],
@@ -224,7 +234,6 @@ function download() {
     fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
     fetchsub = mp.utils.subprocess(fetchdetails)
     dlinfo = JSON.parse(fetchsub.stdout)
-    mp.msg.error(JSON.stringify(dlinfo))
     if (!!dlinfo.error) {
         if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // max 2 login attemtps
             login_attempts++
@@ -243,10 +252,12 @@ function download() {
         mp.osd_message(JSON.stringify(dlinfo.msg))
         mp.commandv("sub-add", dlinfo.tmp_path)
     }
+    
 
     login_attempts = 0
     mp.set_property('sub-auto', 'fuzzy')
     mp.commandv('rescan_external_files', 'reselect')
+    sublistdown.push(o.file_id)
     DrawOSD()
 }
 
