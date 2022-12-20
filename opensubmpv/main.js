@@ -1,16 +1,13 @@
-
-
 var credentials = require('./credentials');
 var settings = require('./settings');
 
-KEYBINDING = settings.keybinding; 
-mp.add_key_binding(KEYBINDING, "start", start)
-languages = settings.languages;
-var options = {};
-var sublistdown = new Array();
+var keybinding = settings.keybinding;
+mp.add_key_binding(keybinding, "start", start)
+var sublistdown = [];
+
 function printoverlay(toprint, opt) {
-    s = ""
-    if (!!opt && !!opt.append) s = ov.data
+    var s = ""
+    if (!!opt && !!opt.append) var s = ov.data
     for (var d = 0; d < toprint.length; d++) {
         for (var i = 0; i < toprint[d].length; i++) {
             s += "{\\fscx60}{\\fscy60}" + toprint[d][i] + "\\h"
@@ -23,83 +20,87 @@ function printoverlay(toprint, opt) {
 
 function authenticate() {
 
-    output = [["{\\an5}{\\b1}", "logging in"]]
+    var output = [["{\\an5}{\\b1}", "logging in"]]
     printoverlay(output)
-    script = mp.utils.join_path(scriptpath, "login.ps1")
+    var script = mp.utils.join_path(scriptpath, "login.ps1")
     var o = {
-        consumerkey: credentials.consumerkey, 
-        username: credentials.username, 
+        consumerkey: credentials.consumerkey,
+        username: credentials.username,
         password: credentials.password
     }
-    logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
-    logindata = mp.utils.subprocess(logindetails)
-    s = JSON.parse(logindata.stdout)
-    if (s.status !== 200) {
+    var logindetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
+    var logindata = mp.utils.subprocess(logindetails)
+    var logininfo = JSON.parse(logindata.stdout)
+    if (logininfo.status !== 200) {
         return
     }
     credentials.token = s["token"]
-    output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")"]]
+    var output = [["{\\an5}{\\b1}", "Logged in as userid:", s["user"]["user_id"], "(" + s["user"]["level"] + ")"]]
     printoverlay(output)
 }
 
 function start() {
-    
+
     mp.register_event("file-loaded", exit)
-    options = {'title': mp.get_property('media-title')}
-    sublistdown.push('subs')
+    
+    //these are global
     item = 0
     login_attempts = 0
     scriptpath = mp.get_script_directory()
     ov = mp.create_osd_overlay("ass-events")
-    
     filepath = mp.get_property("path")
-    output = [["{\\an5}{\\b1}", "Opensubtitle Searching", "{\\an2}", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
+    mediatitle = mp.get_property('media-title')
+    data = null
+    id = undefined
+    
+    var output = [["{\\an5}{\\b1}", "Opensubtitle Searching", "{\\an2}", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
     printoverlay(output)
     mp.add_key_binding("e", "exit", exit)
-    fetch()
+    var options = { 'title': mediatitle }
+    fetch(options)
 }
 
 
 function guessit() {
-    output = [["{\\an5}{\\b1}", "trying super hard..."]]
+    var output = [["{\\an5}{\\b1}", "trying super hard..."]]
     printoverlay(output)
-    script = mp.utils.join_path(scriptpath, "guessit.ps1")
+    var script = mp.utils.join_path(scriptpath, "guessit.ps1")
     var o = {
         consumerkey: credentials.consumerkey,
         token: credentials.token,
         filepath: filepath
     }
-    guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
-    runguessit = mp.utils.subprocess(guessdetails)
-    guessitdata = JSON.parse(runguessit.stdout)
+    var guessdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
+    var runguessit = mp.utils.subprocess(guessdetails)
+    var guessitdata = JSON.parse(runguessit.stdout)
     if (!!guessitdata.error) {
         mp.osd_message(JSON.stringify(data), 15)
         exit()
         return
     }
 
-    options = {
+    var options = {
         year: guessitdata.year,
         type: guessitdata.type,
         title: guessitdata.title,
     }
 
-    fetch()
+    fetch(options)
 }
 
-function fetch() {
+function fetch(options) {
 
-    script = mp.utils.join_path(scriptpath, "fetch.ps1")
+    var script = mp.utils.join_path(scriptpath, "fetch.ps1")
     var o = {
-        consumerkey: credentials.consumerkey, 
-        token: credentials.token, 
-        filepath: filepath, 
+        consumerkey: credentials.consumerkey,
+        token: credentials.token,
+        filepath: filepath,
         options: options,
-        languages: languages
+        languages: settings.languages
     }
-    
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
-    fetchdata = mp.utils.subprocess(fetchdetails)
+
+    var fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
+    var fetchdata = mp.utils.subprocess(fetchdetails)
     data = JSON.parse(fetchdata.stdout)
     if (!!data.error) {
         mp.osd_message(JSON.stringify(data), 15)
@@ -112,7 +113,6 @@ function fetch() {
     mp.add_key_binding("p", "previous", previous)
     mp.add_key_binding("d", "download", download)
     mp.add_key_binding("t", "guessit", guessit)
-    options = {'title':  mp.get_property('media-title')}
     ov.remove()
     DrawOSD()
 
@@ -130,32 +130,34 @@ function DrawOSD() {
         printoverlay(output, { append: true })
         return
     }
-     id = data["data"][item]['attributes']['files'][0]["file_id"]
-     filename_sub = data["data"][item]['attributes']['files'][0]['file_name']
-     uploaded_name = data["data"][item]['attributes']['uploader']["name"]
-     ismoviehash_match = data["data"][item]['attributes']["moviehash_match"]
-     uploader_rank = data["data"][item]['attributes']['uploader']["rank"]
-     feature_title = data["data"][item]['attributes']['feature_details']['title']
-     feature_year = data["data"][item]['attributes']['feature_details']['year']
-     feature_type = data["data"][item]['attributes']['feature_details']['feature_type']
-     sublanguage = data["data"][item]['attributes']['language']
+    var selectedsub = data["data"][item]['attributes']
 
-     ishd = data["data"][item]['attributes']["hd"]
-     isforeign_parts_only = data["data"][item]['attributes']["foreign_parts_only"]
-     ishearing_impired = data["data"][item]['attributes']["hearing_impaired"]
+    id = selectedsub['files'][0]["file_id"]
+    var filename_sub = selectedsub['files'][0]['file_name']
+    var uploaded_name = selectedsub['uploader']["name"]
+    var ismoviehash_match = selectedsub["moviehash_match"]
+    var uploader_rank = selectedsub['uploader']["rank"]
+    var feature_title = selectedsub['feature_details']['title']
+    var feature_year = selectedsub['feature_details']['year']
+    var feature_type = selectedsub['feature_details']['feature_type']
+    var sublanguage = selectedsub['language']
 
-     machine_translated = data["data"][item]['attributes']["hearing_impaired"]
-     ai_translated = data["data"][item]['attributes']["ai_translated"]
-    
-    function isSubdownloaded(id){
+    var ishd = selectedsub["hd"]
+    var isforeign_parts_only = selectedsub["foreign_parts_only"]
+    var ishearing_impired = selectedsub["hearing_impaired"]
+
+    var machine_translated = selectedsub["hearing_impaired"]
+    var ai_translated = selectedsub["ai_translated"]
+
+    function isSubdownloaded() {
         for (var s = 0; s < sublistdown.length; s++) {
             if (sublistdown[s].toString().trim() == id.toString().trim()) {
-                return "{\\1c&H00FF00&}"+(item+1)+"{\\1c}"
+                return "{\\1c&H00FF00&}" + (item + 1) + "{\\1c}"
             }
         }
-        return (item+1);
+        return (item + 1);
     }
-    isdlnum = isSubdownloaded(id)
+    var isdlnum = isSubdownloaded()
     var output = [
         ["{\\b1}", isdlnum + '/' + data["data"].length, "{\\b0}"],
         ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub],
@@ -168,28 +170,31 @@ function DrawOSD() {
 
     printoverlay(output)
 
-    sub_rating = data["data"][item]['attributes']['ratings']
-    sub_dlcount = data["data"][item]['attributes']['download_count']
-    sub_points = data["data"][item]['attributes']['points']
-    sub_votes = data["data"][item]['attributes']['votes']
+    var sub_rating = selectedsub['ratings']
+    var sub_dlcount = selectedsub['download_count']
+    var sub_points = selectedsub['points']
+    var sub_votes = selectedsub['votes']
 
-    output = [["{\\b1}", "Sub Rating:", "{\\b0}", sub_rating, "{\\b1}", "Downloads:", "{\\b0}", sub_dlcount, "{\\b1}", "Votes:", "{\\b0}", sub_votes]]
+    var output = [["{\\b1}", "Sub Rating:", "{\\b0}", sub_rating, "{\\b1}", "Downloads:", "{\\b0}", sub_dlcount, "{\\b1}", "Votes:", "{\\b0}", sub_votes]]
+
+    printoverlay(output, { append: true })
+
+    var entry = []
+    if (machine_translated) 
+        entry.push("{\\b1}", "Machine Translated:", "{\\b0}", formatBooleans(machine_translated))
+    if (ai_translated)
+        entry.push("{\\b1}", "AI Translated:", "{\\b0}", formatBooleans(ai_translated))
+
+    var output = [entry]
+    printoverlay(output, { append: true })
+
+    var output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
 
     printoverlay(output, { append: true })
 
-    entry = []
-    if (machine_translated) entry.push("{\\b1}", "Machine Translated:", "{\\b0}", formatBooleans(machine_translated))
-    if (ai_translated) entry.push("{\\b1}", "AI Translated:", "{\\b0}", formatBooleans(ai_translated))
-    output = [entry]
-    printoverlay(output, { append: true })
-
-    output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry harder", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]]
-
-    printoverlay(output, { append: true })
-    
-    if(settings.autodlMovieHashMatch && ismoviehash_match && item == 0){
+    if (settings.autodlMovieHashMatch && ismoviehash_match && item == 0) {
         settings.autodlMovieHashMatch = false
-        download() 
+        download()
     }
 }
 
@@ -197,43 +202,43 @@ function next() {
     item++
     if (item < data['data'].length) {
         DrawOSD()
-        return 
-    } item = data['data'].length
+        return
+    } item = data['data'].length -1
 }
 
 function previous() {
     item--
     if (item >= 0) {
         DrawOSD()
-        return 
+        return
     } item = 0
 }
 
 function download() {
-    token_file = mp.utils.join_path(scriptpath, "token")
-    token = mp.utils.read_file(token_file)
+    var token_file = mp.utils.join_path(scriptpath, "token")
+    var token = mp.utils.read_file(token_file)
     if (!!token == false) {
         authenticate()
         mp.utils.write_file("file://" + token_file, credentials.token)
         token = credentials.token
     }
 
-    output = [["{\\an5}", "downloading..."]]
+    var output = [["{\\an5}", "downloading..."]]
     printoverlay(output, { append: true })
-    script = mp.utils.join_path(scriptpath, "download.ps1")
-    file_id = id.toString().trim()
+    var script = mp.utils.join_path(scriptpath, "download.ps1")
+    var file_id = id.toString().trim()
     var o = {
-        consumerkey: credentials.consumerkey, 
-        token: token, 
-        filepath: filepath, 
+        consumerkey: credentials.consumerkey,
+        token: token,
+        filepath: filepath,
         file_id: file_id,
-        title: options.title,
+        title: mediatitle,
         toTemp: settings.alwaysDltoTemp
     }
 
-    fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
-    fetchsub = mp.utils.subprocess(fetchdetails)
-    dlinfo = JSON.parse(fetchsub.stdout)
+    var fetchdetails = { args: ["powershell.exe", "-executionpolicy", "remotesigned", "-File", script, JSON.stringify(o)] }
+    var fetchsub = mp.utils.subprocess(fetchdetails)
+    var dlinfo = JSON.parse(fetchsub.stdout)
     if (!!dlinfo.error) {
         if ((dlinfo.error == 403 || dlinfo.error == 401) && login_attempts <= 1) { // max 2 login attemtps
             login_attempts++
@@ -244,7 +249,7 @@ function download() {
         } else {
             mp.msg.error(JSON.stringify(dlinfo))
             exit()
-            return 
+            return
         }
     }
 
@@ -252,7 +257,7 @@ function download() {
         mp.osd_message(JSON.stringify(dlinfo.msg))
         mp.commandv("sub-add", dlinfo.tmp_path)
     }
-    
+
 
     login_attempts = 0
     mp.set_property('sub-auto', 'fuzzy')
