@@ -6,4 +6,4 @@ var settings = {
     autodlMovieHashMatch: false //if true and first result matches moviehash then auto download
 };
 
-module.exports = settings
+module.exports = settings;
