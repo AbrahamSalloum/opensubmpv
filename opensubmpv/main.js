@@ -31,6 +31,7 @@ function authenticate() {
     var logindetails = { args: ["powershell.exe", "-executionpolicy", "bypass", "-File", script, JSON.stringify(o)] };
     var logindata = mp.utils.subprocess(logindetails);
     var logininfo = JSON.parse(logindata.stdout);
+
     if (logininfo.status !== 200) {
         return;
     }
@@ -42,7 +43,6 @@ function authenticate() {
 function start() {
 
     mp.register_event("file-loaded", exit);
-    
     //these are global
     item = 0;
     login_attempts = 0;
@@ -237,7 +237,6 @@ function download() {
         title: mediatitle,
         toTemp: settings.alwaysDltoTemp
     };
-
     var fetchdetails = { args: ["powershell.exe", "-executionpolicy", "bypass", "-File", script, JSON.stringify(o)] };
     var fetchsub = mp.utils.subprocess(fetchdetails);
     var dlinfo = JSON.parse(fetchsub.stdout);
@@ -266,6 +265,20 @@ function download() {
     mp.commandv('rescan_external_files', 'reselect');
     sublistdown.push(o.file_id);
     DrawOSD();
+}
+
+
+function getCurrentSubList(){
+    //todo: show as downloaded if matching subid exists in filename
+    existingsubs = []
+
+    subs = mp.get_property_native('track-list')
+    // mp.msg.info(JSON.stringify(S))
+    for(var s = 0; s < subs.length; s++) {
+        if(subs[s].type == "sub"){
+            existingsubs.push(subs[s].type)
+        }
+    }
 }
 
 function exit() {

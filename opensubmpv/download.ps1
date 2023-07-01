@@ -20,9 +20,7 @@ $body = @{
 	"file_id" = [int]$fileid
 } | ConvertTo-Json
 
-
-$random = Get-Random
-$NewName = $title + "." + $random + "." + $fileid + ".srt"
+$NewName = $title + "." + $fileid + ".srt"
 $NewName = $NewName.Split([IO.Path]::GetInvalidFileNameChars()) -join ''
 
 if($full_file_path -match '^http' -or $toTemp){
@@ -76,7 +74,7 @@ try {
 	
 	$TMPpath = ($env:temp)
 	$newfile = Join-Path $TMPpath $NewName
-	Rename-Item -Force -LiteralPath $tempFile -NewName $newfile
+	Move-Item -Force -LiteralPath $tempFile  $newfile
 	$msg = "permission problem...loading from temp"
 }
 
