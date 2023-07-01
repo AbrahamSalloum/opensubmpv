@@ -11,7 +11,7 @@ Will also work with http streams (as long as there is a embedded title).
 Requirements:
 
 * powershell 5.1 (older/newer may work idk)
-* mpv
+* mpv compiled with js support (most packages have this by default)
 
 Install: 
 1. Move the folder "opensubmpv" into your scripts folder.
