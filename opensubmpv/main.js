@@ -52,7 +52,7 @@ function start() {
     mediatitle = mp.get_property('media-title');
     data = null;
     id = undefined;
-    
+    getCurrentSubList()
     var output = [["{\\an5}{\\b1}", "Opensubtitle Searching", "{\\an2}", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
     printoverlay(output);
     mp.add_key_binding("e", "exit", exit);
@@ -249,7 +249,21 @@ function download() {
 
         } else {
             mp.msg.error(JSON.stringify(dlinfo));
+            try{
+                error0 = dlinfo.description.Exception.Message
+            } catch(err) {
+                error0 = "Error:"
+            }
+            try{
+                error1 = dlinfo.details.Message
+            } catch(err){
+                error1 =""
+            }
+            
+            errormsg =  (error0 == error1 ? error0 : error0 + error1)+" See log for details"
+            
             exit();
+            mp.osd_message(errormsg, 4)
             return;
         }
     }
@@ -269,14 +283,15 @@ function download() {
 
 
 function getCurrentSubList(){
-    //todo: show as downloaded if matching subid exists in filename
-    existingsubs = []
-
     subs = mp.get_property_native('track-list')
-    // mp.msg.info(JSON.stringify(S))
     for(var s = 0; s < subs.length; s++) {
+        matchsubid = '\.(\d+)(?=\.\w+$)' // extract subid from a sub that matches <filename>.<subid>.<ext>
         if(subs[s].type == "sub"){
-            existingsubs.push(subs[s].type)
+            oneOfus  = subs[s].title.match(/\.(\d+)(?=\.\w+$)/)
+            if(oneOfus){
+                sublistdown.push(oneOfus[1])
+            }
+            
         }
     }
 }
