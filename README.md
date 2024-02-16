@@ -22,3 +22,4 @@ run:
 * ctrl-shift-o 
 
 ![Yi Yi](Screenshot_1.png?raw=true "Yi Yi Mcdonalds scene")
+![Yi Yi](Screenshot_2.png?raw=true "Yi Yi Mcdonalds scene")
