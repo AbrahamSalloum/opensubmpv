@@ -2,6 +2,8 @@ var credentials = require('./credentials');
 var settings = require('./settings');
 
 var keybinding = settings.keybinding;
+var isMinimalInterface = settings.keybinding || false;
+
 mp.add_key_binding(keybinding, "start", start);
 var sublistdown = [];
 
@@ -167,6 +169,18 @@ function DrawOSD() {
         ["{\\b1}", "Year:", "{\\b0}", feature_year, "{\\b1}", "Type:", "{\\b0}", feature_type],
     ];
 
+    var minimalOutput = [
+        ["{\\b1}", isdlnum + '/' + data["data"].length, "{\\b0}", "{\\b1}", "Title:", "{\\b0}", feature_title],
+        ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub],
+        ["{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match), "{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
+        // ["{\\b1}", "Sub id:", "{\\b0}", id, "{\\b1}", "Uploaded By:", "{\\b0}", uploaded_name, "(" + uploader_rank + ")"],
+        ["{\\b1}", "HD:", "{\\b0}", formatBooleans(ishd), "{\\b1}", "Foriegn Parts Only:", "{\\b0}", formatBooleans(isforeign_parts_only), "{\\b1}", "Hearing Impaired:", "{\\b0}", formatBooleans(ishearing_impired)],
+        // ["{\\b1}", "Title:", "{\\b0}", feature_title],
+        // ["{\\b1}", "Year:", "{\\b0}", feature_year, "{\\b1}", "Type:", "{\\b0}", feature_type],
+    ]
+
+    output = isMinimalInterface ?  minimalOutput : output
+
     printoverlay(output);
 
     var sub_rating = selectedsub['ratings'];
@@ -174,8 +188,7 @@ function DrawOSD() {
     var sub_votes = selectedsub['votes'];
 
     var output = [["{\\b1}", "Sub Rating:", "{\\b0}", sub_rating, "{\\b1}", "Downloads:", "{\\b0}", sub_dlcount, "{\\b1}", "Votes:", "{\\b0}", sub_votes]];
-
-    printoverlay(output, { append: true });
+    if(isMinimalInterface == false) printoverlay(output, { append: true });
 
     var entry = [];
     if (machine_translated){
