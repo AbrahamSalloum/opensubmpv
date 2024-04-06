@@ -10,7 +10,7 @@ Will also work with http streams (as long as there is a embedded title).
 
 Requirements:
 
-* powershell 5.1 (older/newer may work idk)
+* powershell. 5.1+ (All recent versions will work). 
 * mpv compiled with js support (most packages have this by default)
 
 Install: 
