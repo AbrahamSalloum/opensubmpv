@@ -197,11 +197,13 @@ function DrawOSD() {
         }
         
     }
-        
-    if (ai_translated){
-        entry.push("{\\b1}", "AI Translated:", "{\\b0}", formatBooleans(ai_translated));
+
+    if(settings.allowAItranslations) {
+        if (ai_translated){
+            entry.push("{\\b1}", "AI Translated:", "{\\b0}", formatBooleans(ai_translated));
+        }
     }
-        
+
 
     var output = [entry];
     printoverlay(output, { append: true });
