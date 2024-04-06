@@ -6,6 +6,8 @@ $jwt = $o.token
 $full_file_path = $o.filepath
 $languages = $o.languages
 $options = $o.options
+$allowMachineTrans = $o.allowMachineTranslations
+$allowAItrans = $o.allowAItranslations
 
 $dataLength = 65536
 
@@ -72,6 +74,9 @@ if ($options.year) {
 
 $nvCollection.Add('languages', $languages)
 $nvCollection.Add('type', "All")
+
+$nvCollection.Add('machine_translated', $allowMachineTrans)
+$nvCollection.Add('ai_translated', $allowAItrans)
 
 $uriRequest = [System.UriBuilder]'https://api.opensubtitles.com/api/v1/subtitles'
 $uriRequest.Query = $nvCollection.ToString()
