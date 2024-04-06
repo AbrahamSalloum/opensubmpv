@@ -2,7 +2,7 @@ var credentials = require('./credentials');
 var settings = require('./settings');
 
 var keybinding = settings.keybinding;
-var isMinimalInterface = settings.keybinding || false;
+var isMinimalInterface = settings.minimalInterface || false;
 
 mp.add_key_binding(keybinding, "start", start);
 var sublistdown = [];
