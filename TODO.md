@@ -1,2 +1,2 @@
-* Allow user Input to override "guess It" search. 
+* Allow user Input to override "Try Filename" search. 
 * Toggle Full/minimal interface. 
