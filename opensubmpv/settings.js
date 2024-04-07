@@ -1,6 +1,6 @@
 
 var settings = {
-	minimalInterface: true, // hide  detail from the interface
+	minimalInterface: false, // hide  detail from the interface
     languages: "en", // list of prefered languages, format:  "en,cn,ar"
     keybinding: "ctrl+shift+o", // keybinding to launch this script
     alwaysDltoTemp: false, //if true always download to temp rather then save to folder

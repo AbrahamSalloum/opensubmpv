@@ -59,14 +59,15 @@ function start() {
     printoverlay(output);
     mp.add_key_binding("e", "exit", exit);
     var options = { 'title': mediatitle };
+    
     fetch(options);
 }
 
 
 function guessit() {
-    var output = [["{\\an5}{\\b1}", "searching by filename..."]];
+    var output = [["{\\an5}{\\b1}", "Manual Search..."]];
     printoverlay(output);
-    var script = mp.utils.join_path(scriptpath, "guessit.ps1");
+    var script = mp.utils.join_path(scriptpath, "manualSearch.ps1");
     var o = {
         consumerkey: credentials.consumerkey,
         token: credentials.token,
@@ -82,8 +83,8 @@ function guessit() {
     }
 
     var options = {
-        year: guessitdata.year,
-        type: guessitdata.type,
+        // year: guessitdata.year,
+        // type: guessitdata.type,
         title: guessitdata.title
     };
 
@@ -116,7 +117,7 @@ function fetch(options) {
     mp.add_key_binding("n", "next", next);
     mp.add_key_binding("p", "previous", previous);
     mp.add_key_binding("d", "download", download);
-    mp.add_key_binding("t", "guessit", guessit);
+    mp.add_key_binding("shift+m", "guessit", guessit);
     ov.remove();
     DrawOSD();
 
@@ -129,7 +130,7 @@ function formatBooleans(isbool) {
 function DrawOSD() {
 
     if (!!data == false || data["data"].length == 0) {
-        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry filename", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
+        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "shift + m{\\1c}{\\b0}anual", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
 
         printoverlay(output, { append: true });
         return;
@@ -164,20 +165,26 @@ function DrawOSD() {
     var isdlnum = isSubdownloaded();
     var output = [
         ["{\\b1}", isdlnum + '/' + data["data"].length, "{\\b0}"],
-        ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub],
-        ["{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match), "{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
+        ["{\\b1}", "Title:", "{\\b0}", feature_title, "{\\b1}", "Year:", "{\\b0}", feature_year, "{\\b1}", "Type:", "{\\b0}", feature_type],
+        ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub, "{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match),],
+        ["{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
         ["{\\b1}", "Sub id:", "{\\b0}", id, "{\\b1}", "Uploaded By:", "{\\b0}", uploaded_name, "(" + uploader_rank + ")"],
         ["{\\b1}", "HD:", "{\\b0}", formatBooleans(ishd), "{\\b1}", "Foreign Parts Only:", "{\\b0}", formatBooleans(isforeign_parts_only), "{\\b1}", "Hearing Impaired:", "{\\b0}", formatBooleans(ishearing_impired)],
-        ["{\\b1}", "Title:", "{\\b0}", feature_title],
-        ["{\\b1}", "Year:", "{\\b0}", feature_year, "{\\b1}", "Type:", "{\\b0}", feature_type],
+        
+        
     ];
 
     var minimalOutput = [
-        ["{\\b1}", isdlnum + '/' + data["data"].length, "{\\b0}", "{\\b1}", "Title:", "{\\b0}", feature_title],
-        ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub],
-        ["{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match), "{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
-        ["{\\b1}", "Foreign Parts Only:", "{\\b0}", formatBooleans(isforeign_parts_only), "{\\b1}", "Hearing Impaired:", "{\\b0}", formatBooleans(ishearing_impired)],
+        ["{\\b1}", isdlnum + '/' + data["data"].length, "{\\b0}"],
+        ["{\\b1}", "Title:", "{\\b0}", feature_title, "{\\b1}", "Year:", "{\\b0}", feature_year, "{\\b1}", "Type:", "{\\b0}", feature_type],
+        ["{\\b1}", "Subtitle:", "{\\b0}", filename_sub, "{\\b1}", "Moviehash Match:", "{\\b0}", formatBooleans(ismoviehash_match),],
+        ["{\\b1}", "Sub Language:", "{\\b0}", sublanguage],
     ]
+
+    var mindetail = []
+    if(isforeign_parts_only) mindetail.push("{\\b1}", "Foreign Parts Only:", "{\\b0}", formatBooleans(isforeign_parts_only))
+    if(ishearing_impired) mindetail.push("{\\b1}", "Hearing Impaired:", "{\\b0}", formatBooleans(ishearing_impired))
+    minimalOutput.push(mindetail)
 
     output = isMinimalInterface ?  minimalOutput : output
 
@@ -208,7 +215,7 @@ function DrawOSD() {
     var output = [entry];
     printoverlay(output, { append: true });
 
-    var output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "t{\\1c}{\\b0}ry filename", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
+    var output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "shift + m{\\1c}{\\b0}anual", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
 
     printoverlay(output, { append: true });
 
@@ -302,13 +309,18 @@ function download() {
 
 function getCurrentSubList(){
     subs = mp.get_property_native('track-list')
+    
     for(var s = 0; s < subs.length; s++) {
+        
         matchsubid = '\.(\d+)(?=\.\w+$)' // extract subid from a sub that matches <filename>.<subid>.<ext>
         if(subs[s].type == "sub"){
-            oneOfus  = subs[s].title.match(/\.(\d+)(?=\.\w+$)/)
-            if(oneOfus){
-                sublistdown.push(oneOfus[1])
+            if(JSON.stringify(subs[s].title)) {
+                oneOfus  = subs[s].title.match(/\.(\d+)(?=\.\w+$)/)
+                if(oneOfus){
+                    sublistdown.push(oneOfus[1])
+                }
             }
+
             
         }
     }
