@@ -19,10 +19,11 @@ Install:
 3. Customise settings.js to your liking.
 
 run:
-* ctrl-shift-o 
-
-![Yi Yi](Screenshot_1.png?raw=true "Yi Yi Mcdonalds scene")
+* ctrl-shift-o
+  
 Mininal Interface: 
+![Yi Yi](Screenshot_1.png?raw=true "Yi Yi Mcdonalds scene")
+Full Interface: 
 ![Yi Yi](Screenshot_3.png?raw=true "Yi Yi Mcdonalds scene")
 Manual Search Override: (Work in progress)
 ![Yi Yi](Screenshot_2.png?raw=true "Yi Yi Mcdonalds scene")
