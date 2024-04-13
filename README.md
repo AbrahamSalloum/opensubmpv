@@ -8,6 +8,8 @@ It will download the sub to the same directory as the video and load.
 If it can't write to that directory it will load the sub from temp. 
 Will also work with http streams (as long as there is a embedded title).
 
+"advanced search" will allow the user to overide the search params.
+
 Requirements:
 
 * powershell. 5.1+ (All recent versions will work). 
