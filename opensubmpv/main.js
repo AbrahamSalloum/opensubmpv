@@ -65,7 +65,7 @@ function start() {
 
 
 function guessit() {
-    var output = [["{\\an5}{\\b1}", "Manual Search..."]];
+    var output = [["{\\an5}{\\b1}", "Advanced Search..."]];
     printoverlay(output);
     var script = mp.utils.join_path(scriptpath, "manualSearch.ps1");
     var o = {
@@ -83,9 +83,12 @@ function guessit() {
     }
 
     var options = {
-        // year: guessitdata.year,
-        // type: guessitdata.type,
-        title: guessitdata.title
+        tmdb: guessitdata.tmdb,
+        imdb: guessitdata.imdb,
+        title: guessitdata.title,
+        year: guessitdata.year,
+        type: guessitdata.type,
+        advancedSearch: "true"
     };
 
     fetch(options);
@@ -117,7 +120,7 @@ function fetch(options) {
     mp.add_key_binding("n", "next", next);
     mp.add_key_binding("p", "previous", previous);
     mp.add_key_binding("d", "download", download);
-    mp.add_key_binding("shift+m", "guessit", guessit);
+    mp.add_key_binding("a", "guessit", guessit);
     ov.remove();
     DrawOSD();
 
@@ -130,7 +133,7 @@ function formatBooleans(isbool) {
 function DrawOSD() {
 
     if (!!data == false || data["data"].length == 0) {
-        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "shift + m{\\1c}{\\b0}anual", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
+        output = [["{\\an2}", "No Results Found...", "{\\b1}{\\1c&H0000FF&}", "a{\\1c}{\\b0}dvanced search", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
 
         printoverlay(output, { append: true });
         return;
@@ -198,14 +201,14 @@ function DrawOSD() {
     if(isMinimalInterface == false) printoverlay(output, { append: true });
 
     var entry = [];
-    if (settings.allowMachineTranslations){
+    if (settings.allowMachineTranslations.toUpperCase() == "INCLUDE"){
         if(machine_translated){
             entry.push("{\\b1}", "Machine Translated:", "{\\b0}", formatBooleans(machine_translated));
         }
         
     }
 
-    if(settings.allowAItranslations) {
+    if(settings.allowAItranslations.toUpperCase() == "INCLUDE") {
         if (ai_translated){
             entry.push("{\\b1}", "AI Translated:", "{\\b0}", formatBooleans(ai_translated));
         }
@@ -215,7 +218,7 @@ function DrawOSD() {
     var output = [entry];
     printoverlay(output, { append: true });
 
-    var output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "shift + m{\\1c}{\\b0}anual", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
+    var output = [["{\\an2}", "{\\b1}{\\1c&H0000FF&}", "a{\\1c}{\\b0}dvanced search", "{\\b1}{\\1c&H0000FF&}", "{\\b1}{\\1c&H0000FF&}", "d{\\1c}{\\b0}ownload and load", "{\\b1}{\\1c&H0000FF&}", "n{\\1c}{\\b0}ext", "{\\b1}{\\1c&H0000FF&}", "p{\\1c}{\\b0}revious", "{\\b1}{\\1c&H0000FF&}", "e{\\1c}{\\b0}xit"]];
 
     printoverlay(output, { append: true });
 

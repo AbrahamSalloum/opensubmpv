@@ -5,8 +5,8 @@ var settings = {
     keybinding: "ctrl+shift+o", // keybinding to launch this script
     alwaysDltoTemp: false, //if true always download to temp rather then save to folder
 
-    allowMachineTranslations: false, // Allow Machine Translations. 
-    allowAItranslations: true, // AI translations. These *should* be better then Machine translations. 
+    allowMachineTranslations: "include", // include/exclude Allow Machine Translations. 
+    allowAItranslations: "include", // include/exclude AI translations. These *should* be better then Machine translations. 
     
     autodlMovieHashMatch: false, //if true and first result matches moviehash then auto download
 };
