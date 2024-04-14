@@ -105,7 +105,6 @@ function fetch(options) {
         languages: settings.languages,
         allowMachineTrans: settings.allowMachineTranslations,
         allowAItranslations: settings.allowAItranslations,
-        
     };
 
     var fetchdetails = { args: ["powershell.exe", "-executionpolicy", "bypass", "-File", script, JSON.stringify(o)] };

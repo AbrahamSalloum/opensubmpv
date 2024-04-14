@@ -73,14 +73,12 @@ if (-not  [string]::IsNullOrEmpty($options.tmdb)) {
 	$nvCollection.Add('tmdb_id', $options.tmdb)
 }
 
-if (-not [string]::IsNullOrEmpty($options.year)) {
+if (-not [string]::IsNullOrEmpty($options.year) -and ![string]::IsNullOrEmpty($options.imdb) -and ![string]::IsNullOrEmpty($options.tmdb)) {
 	$nvCollection.Add('year', $options.year)
 }
 
 
-
-
-if (-not [string]::IsNullOrEmpty($options.type)) {
+if (-not [string]::IsNullOrEmpty($options.type) -and ![string]::IsNullOrEmpty($options.imdb) -and ![string]::IsNullOrEmpty($options.tmdb)) {
 	$nvCollection.Add('type', $options.type)
 } else {
 	$nvCollection.Add('type', "all")

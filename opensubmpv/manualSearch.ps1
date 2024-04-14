@@ -10,7 +10,7 @@ $GreetingLabel.ForeColor = [System.Drawing.Color]::Black
 
 $title = New-Object System.Windows.Forms.textbox
 $title.Multiline = $False
-$title.Width = 250
+$title.Width = 350
 $title.Location = new-object System.Drawing.Size(10, 25)
 
 
@@ -25,7 +25,8 @@ $type = New-Object system.Windows.Forms.ComboBox
 $type.text = ""
 $type.autosize = $true
 $type.location = New-Object System.Drawing.Size(10, 75)
-@("all", "Movie", "Episode", "TV show") | ForEach-Object { [void] $type.Items.Add($_) }
+
+@("All", "Movie", "Episode", "TV show") | ForEach-Object { [void] $type.Items.Add($_) }
 $type.SelectedIndex = 0
 
 
@@ -37,7 +38,7 @@ $YearLabel.ForeColor = [System.Drawing.Color]::Black
 
 
 $info = New-Object Windows.Forms.Label
-$info.Text = "If IMDb/TMDb id is provided 'title' will not be used in the query"
+$info.Text = "If IMDb or TMDb ID is provided other fields will be ignored."
 $info.AutoSize = $true
 $info.Location = New-Object Drawing.Point(140,75)
 $info.ForeColor = [System.Drawing.Color]::Black
@@ -71,7 +72,7 @@ $tmdb.Size = New-Object System.Drawing.Size(100, 100)
 $tmdb.Location = New-Object System.Drawing.Size(340, 125)
 
 $CreateButton = New-Object System.Windows.Forms.Button
-$CreateButton.Location = New-Object System.Drawing.Size (275, 25)
+$CreateButton.Location = New-Object System.Drawing.Size (375, 25)
 $CreateButton.BackColor = "LightGray"
 $CreateButton.Text = "Search"
 $CreateButton.Add_Click({
@@ -98,7 +99,7 @@ $CreateButton.Add_Click({
 
 $Form = New-Object Windows.Forms.Form
 $Form.Text = "Advanced Subtitle Search"
-$Form.Size = New-Object System.Drawing.Size(500, 200) 
+$Form.Size = New-Object System.Drawing.Size(475, 200) 
 $Form.KeyPreview = $True
 # $Form.Icon = $objIcon 
 $Form.Topmost = $True
